@@ -1,0 +1,9 @@
+<settings>
+    <mirrors>
+        <mirror>
+          <id>nexus</id>
+          <mirrorOf>*</mirrorOf>
+          <url>http://imageregistry.nexus.local/repository/maven-public/</url>
+        </mirror>
+      </mirrors>    
+</settings>
