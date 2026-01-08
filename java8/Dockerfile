@@ -8,6 +8,7 @@
 # - Maven 3.8.6 (still Java 8 compatible, newer)
 
 FROM maven:3.8.6-eclipse-temurin-8 AS builder   
+# FROM maven:3.9.8-eclipse-temurin-8 AS builder  
 # 121.81 MB
 #RUN apk update  && apk add  nano curl 
 
@@ -21,25 +22,29 @@ FROM maven:3.8.6-eclipse-temurin-8 AS builder
 # COPY settings.xml /root/.m2/settings.xml
 
 
-WORKDIR /app
+WORKDIR /build
 
 # Copy dependency files first for better caching
-COPY . .
-# COPY pom.xml ./
-# COPY src ./src
+# COPY settings.xml /root/.m2/settings.xml
+
+COPY hello-world-app/pom.xml ./
+COPY hello-world-app/src ./src
+# COPY lib ./lib
 
 # Build the application with mvn
-# RUN mvn clean install -DskipTests
+RUN mvn clean install -DskipTests && \
+    mvn compile -DskipTests && \
+    mvn package -DskipTests 
 
 
 # Build the application with mvnw
-RUN chmod +x mvnw  && ./mvnw --help
-RUN ./mvnw install -DskipTests && \
-    ./mvnw compile -DskipTests && \
-    ./mvnw package -DskipTests 
+# RUN chmod +x mvnw  && ./mvnw --help
+# RUN ./mvnw install -DskipTests && \
+#     ./mvnw compile -DskipTests && \
+#     ./mvnw package -DskipTests 
 
 
-RUN cp /app/target/*.jar app-runner.jar
+RUN cp /build/target/hello-world-app*.jar app-runner.jar
 
 # EXPOSE 8080
 # USER 1001
@@ -57,11 +62,11 @@ FROM eclipse-temurin:8-jre-alpine AS runtime
 # 59.04 MB
 
 WORKDIR /app
-COPY --from=builder /app/app-runner.jar ./
+COPY --from=builder /build/target/hello-world-app*.jar ./app-runner.jar
 
 EXPOSE 8080
 USER 1001
 CMD java -jar app-runner.jar 
 
 
-# # docker build -t image-java8:dev-0.0.1 . 
+# docker build -t java8-jar:dev-0.0.1 .
